@@ -11,7 +11,6 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from sklearn.preprocessing import LabelEncoder
-from pandas_profiling import ProfileReport
 from streamlit_pandas_profiling import st_profile_report
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
@@ -80,7 +79,7 @@ def nullvalueimputer(data,x,y):
 # import csv file
 #@st.cache(allow_output_mutation=True)
 def get_data():
-    df = pd.read_csv("C:\\Users\\ADMIN\\Desktop\\Project\\Churn.csv")
+    df = pd.read_csv("Churn.csv")
     df = df.drop(['Unnamed: 0'],axis=1)
     df.columns = df.columns.str.replace('.', '_')
     #df['Churn'] = np.where(df['Churn']=='FALSE',0,1)
