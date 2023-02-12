@@ -1,1 +1,1 @@
-# Classification-project--churn-or-loyal-customer-
+# Classification-project-*churn-or-loyal-customer*
