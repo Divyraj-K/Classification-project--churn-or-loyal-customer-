@@ -4,38 +4,16 @@ import numpy as np
 import matplotlib as plt
 import seaborn as sns
 import matplotlib.pyplot as plt
-from mlxtend.evaluate import bias_variance_decomp
-#from statsmodels.stats.contingency_tables import mcnemar
+
 
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from sklearn.preprocessing import LabelEncoder
-from streamlit_pandas_profiling import st_profile_report
-from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import AdaBoostClassifier
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.metrics import accuracy_score , confusion_matrix ,classification_report ,roc_auc_score,auc,roc_curve
-from sklearn.metrics import recall_score,precision_score,f1_score,fbeta_score,plot_roc_curve
-from sklearn.preprocessing import StandardScaler,MinMaxScaler
+
 import plotly.express as px
 
-from sklearn.naive_bayes import GaussianNB
-from sklearn.naive_bayes import BernoulliNB
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from xgboost import XGBClassifier
-from imblearn.over_sampling import SMOTE
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import confusion_matrix, classification_report
+
 
 
 #Set Page Layout
