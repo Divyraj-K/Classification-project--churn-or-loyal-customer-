@@ -83,7 +83,6 @@ def get_data():
     df = df.drop(['Unnamed: 0'],axis=1)
     df.columns = df.columns.str.replace('.', '_')
     #df['Churn'] = np.where(df['Churn']=='FALSE',0,1)
-    #pr = ProfileReport(df)
     return df
 data = get_data()
 
