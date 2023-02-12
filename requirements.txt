@@ -6,3 +6,4 @@ seaborn
 matplotlib
 mlxtend
 plotly==5.7.0
+us
