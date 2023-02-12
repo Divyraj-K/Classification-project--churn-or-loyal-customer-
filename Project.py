@@ -5,7 +5,7 @@ import matplotlib as plt
 import seaborn as sns
 import matplotlib.pyplot as plt
 from mlxtend.evaluate import bias_variance_decomp
-from statsmodels.stats.contingency_tables import mcnemar
+#from statsmodels.stats.contingency_tables import mcnemar
 
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
