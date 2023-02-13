@@ -210,7 +210,7 @@ if EDA:
 
 
     if Report == "Multivariate":
-        tab1, tab2, tab3 =st.tabs(['Scatter','Map','Sunbrust'])
+        tab1, tab2, tab3 =st.tabs(['Scatter Chart','Map Chart','Sunbrust Chart'])
         with tab1:
             cc1, cc2 = st.columns([1, 1])
             x_axis = cc1.selectbox("Select X_axis", numeric)
@@ -242,12 +242,11 @@ if EDA:
 
             fig = px.scatter(df1, x=x_axis, y=Y_axis,
                              color="churn",width=900,height=500)#hover_name="country", log_x=True,
-            st.write("Buble chart")
             st.plotly_chart(fig)
 
         with tab2:
             cl1, cl2, cl3, cl4 = st.columns([1, 1, 1, 1])
-            selected_col = cl1.selectbox("Select Value",numeric)
+            selected_col = cl1.selectbox("Select Variable",numeric)
             f6 = cl2.selectbox("Area_code_", uni2)
             f7 = cl3.selectbox("Voice_plan_", uni3)
             f8 = cl4.selectbox("intl_plan_", uni4)
