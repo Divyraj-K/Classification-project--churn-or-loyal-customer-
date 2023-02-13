@@ -292,7 +292,7 @@ if EDA:
             fig.update_layout(autosize=True,
                               margin=dict(t=110, b=50, l=70, r=40),
                               xaxis_title=' ', yaxis_title=" ",
-                              plot_bgcolor='#1BB3D8', paper_bgcolor='#2d3035',
+                              plot_bgcolor='#0E1117, paper_bgcolor='#0E1117',
                               title_font=dict(size=25, color='#a5a7ab', family="Muli, sans-serif"),
                               font=dict(color='#8a8d93'),
                               legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
