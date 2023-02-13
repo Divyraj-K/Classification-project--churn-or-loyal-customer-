@@ -119,7 +119,7 @@ if EDA:
 
     if Report == "Univariate":
         selected_col = st.sidebar.selectbox("Select Type",df.columns)
-        st.markdown("<h3 style='text-align: center;'>Plots for {selected_col}</h3>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align: center;'>Plot for {selected_col}</h2>", unsafe_allow_html=True)
         if selected_col in categorical:
             fig = make_subplots(rows=1, cols=2, specs=[[{"type": "bar"}, {"type": "pie"}]],
                                 subplot_titles=["Bar Chart", "Pie Chart"], column_widths=[0.6, 0.4])
@@ -244,8 +244,7 @@ if EDA:
         with tab2:
             cl1, cl2, cl3, cl4 = st.columns([1, 1, 1, 1])
             selected_col = cl1.selectbox("Select Variable",numeric)
-            st.markdown("<h2 style='text-align: center;'>Churned customers for each states based on {selected_col}</h2>",
-                                unsafe_allow_html=True)
+            st.markdown(f"<h2 style='text-align: center;'>Churned customers for each states based on {selected_col}</h2>", unsafe_allow_html=True)
             f6 = cl2.selectbox("Area_code_", uni2)
             f7 = cl3.selectbox("Voice_plan_", uni3)
             f8 = cl4.selectbox("intl_plan_", uni4)
