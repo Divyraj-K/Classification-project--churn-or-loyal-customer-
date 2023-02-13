@@ -267,6 +267,7 @@ if EDA:
                                    columns=['churn'], aggfunc=np.sum)
             table['per'] = (table['yes']/(table['yes']+table['no']))*100
             table = table.reset_index()
+            st.dataframe(table)
             fig4 = px.choropleth(table, locations='State_codes', color='per', locationmode= "USA-states",
                            color_continuous_scale="PuBu", width=900, height=500)
             fig4.update_geos(fitbounds="locations", visible=False)
