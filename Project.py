@@ -119,14 +119,13 @@ if EDA:
 
     if Report == "Univariate":
         selected_col = st.sidebar.selectbox("Select Type",df.columns)
+        st.markdown("<h3 style='text-align: center;'>Plots for {selected_col}</h3>", unsafe_allow_html=True)
         if selected_col in categorical:
             fig = make_subplots(rows=1, cols=2, specs=[[{"type": "bar"}, {"type": "pie"}]],
                                 subplot_titles=["Bar Chart", "Pie Chart"], column_widths=[0.6, 0.4])
             fig.add_trace(go.Bar(x=df[selected_col].value_counts().index, y=df[selected_col].value_counts()), row=1, col=1,)
             fig.add_trace(go.Pie(labels=df[selected_col].value_counts().index, values=df[selected_col].value_counts()), row=1, col=2)
-            fig.update_layout(
-                {'title': {'text': f"Plots for {selected_col}", 'x': 0.5, 'y': 0.9, 'font_size': 30, 'font_color': '#FFD700'}},
-            height = 600, width = 900, showlegend = False)
+            fig.update_layout(height = 600, width = 900, showlegend = False)
             fig.update_xaxes(tickangle=-45)
             st.plotly_chart(fig)
 
@@ -247,6 +246,8 @@ if EDA:
         with tab2:
             cl1, cl2, cl3, cl4 = st.columns([1, 1, 1, 1])
             selected_col = cl1.selectbox("Select Variable",numeric)
+            st.markdown("<h2 style='text-align: center;'>Churned customers for each states based on {selected_col}</h2>",
+                                unsafe_allow_html=True)
             f6 = cl2.selectbox("Area_code_", uni2)
             f7 = cl3.selectbox("Voice_plan_", uni3)
             f8 = cl4.selectbox("intl_plan_", uni4)
@@ -271,8 +272,7 @@ if EDA:
                            color_continuous_scale="PuBu", width=900, height=500)
             fig4.update_geos(fitbounds="locations", visible=False)
             fig4.update_layout(geo=dict(bgcolor= 'rgba(0,0,0,0)'),margin={"r":0,"t":100,"l":0,"b":0},paper_bgcolor='#0E1117',plot_bgcolor='#0E1117')
-            st.markdown("<h2 style='text-align: center;'>Ratio of churned customers for each states</h2>",
-                                unsafe_allow_html=True)
+            
             st.plotly_chart(fig4)
 
         with tab3:
