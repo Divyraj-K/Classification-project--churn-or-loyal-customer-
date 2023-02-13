@@ -267,15 +267,20 @@ if EDA:
                                    columns=['churn'], aggfunc=np.sum)
             table['%'] = (table['yes']/(table['yes']+table['no']))*100
             table = table.reset_index()
-            st.dataframe(table)
             fig4 = px.choropleth(table, locations='State_codes', color='%', locationmode= "USA-states",
                            color_continuous_scale="PuBu", width=900, height=500)
             fig4.update_geos(fitbounds="locations", visible=False)
             fig4.update_layout(geo=dict(bgcolor= 'rgba(0,0,0,0)'),margin={"r":0,"t":100,"l":0,"b":0},paper_bgcolor='#0E1117',plot_bgcolor='#0E1117')
+            st.markdown("<h2 style='text-align: center;'>Ratio of churned customers for each states</h2>",
+                                unsafe_allow_html=True)
             st.plotly_chart(fig4)
 
         with tab3:
-            grouped = df.groupby(['area_code', 'voice_plan', 'intl_plan'])['churn'].value_counts().reset_index(
+            df00 = df
+            df00['churn'] = np.where(df00['churn']=='yes','churn','non_churn')
+            df00['voice_plan'] = np.where(df00['voice_plan'] == 'yes', 'voice_plan_yes', 'voice_plan_no')
+            df00['intl_plan'] = np.where(df00['intl_plan'] == 'yes', 'intl_plan_yes', 'intl_plan_no')
+            grouped = df00.groupby(['area_code', 'voice_plan', 'intl_plan'])['churn'].value_counts().reset_index(
                 name='count')
 
             # Create the sunburst chart
