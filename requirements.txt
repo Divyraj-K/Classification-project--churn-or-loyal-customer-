@@ -7,3 +7,5 @@ matplotlib
 mlxtend
 plotly==5.7.0
 us
+association_metrics
+warnings
