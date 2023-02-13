@@ -6,6 +6,10 @@ from plotly.subplots import make_subplots
 import plotly.express as px
 from sklearn.linear_model import LinearRegression
 import us
+import association_metrics as am
+import warnings
+
+warnings.filterwarnings('ignore')
 
 
 #Set Page Layout
@@ -13,7 +17,7 @@ st.set_page_config(layout="wide")
 
 
 # title
-st.markdown("<h1 style='text-align: center;'>Churn prediction</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>Churn Prediction</h1>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center;'>=====================================================================</h3>", unsafe_allow_html=True)
 
 # creating function for null value imputation
@@ -48,7 +52,7 @@ def nullvalueimputer(data,x,y):
 # import csv file
 #@st.cache(allow_output_mutation=True)
 def get_data():
-    df = pd.read_csv("Churn.csv")
+    df = pd.read_csv("C:\\Users\\ADMIN\\Desktop\\Project\\Churn.csv")
     df = df.drop(['Unnamed: 0'],axis=1)
     df.columns = df.columns.str.replace('.', '_')
     #df['Churn'] = np.where(df['Churn']=='FALSE',0,1)
@@ -80,7 +84,7 @@ if Data_view:
     st.write(df.shape)
 
 
-categorical = ['State_names', 'area_code', 'voice_plan', 'intl_plan']#
+categorical = ['State_names', 'area_code', 'voice_plan', 'intl_plan']
 numeric = ['account_length', 'voice_messages', 'intl_mins', 'intl_calls', 'intl_charge',
            'day_charge', 'eve_mins', 'day_mins', 'day_calls', 'eve_calls', 'eve_charge',
            'night_mins', 'night_calls', 'night_charge', 'customer_calls']
@@ -92,40 +96,41 @@ st.sidebar.markdown("<h3 style='text-align: center;'>EDA</h3>", unsafe_allow_htm
 
 EDA = st.sidebar.checkbox('EDA')
 if EDA:
-    Report = st.sidebar.selectbox("Select Report",("Descriptive Statistics","Univeriate","Baiveriate","Multivariate"))
+    Report = st.sidebar.selectbox("Select Report",("Descriptive Statistics","Univariate","Bivariate","Multivariate"))
     if Report == "Descriptive Statistics":
         st.markdown("<h3 style='text-align: center;'>Describe</h3>", unsafe_allow_html=True)
         st.table(df.describe())
+
+
         st.markdown("<h3 style='text-align: center;'>Correlation</h3>", unsafe_allow_html=True)
         matrix = df.corr()
         matrix = round(matrix,2)
         fig = px.imshow(matrix, width=800, height=800, text_auto=True)
         st.plotly_chart(fig)
 
-    if Report == "Univeriate":
+        st.markdown("<h3 style='text-align: center;'>Categorical Associations</h3>", unsafe_allow_html=True)
+        cat = df[['area_code', 'voice_plan', 'intl_plan', 'churn', 'State_names']]
+        dff = cat.apply(
+            lambda x: x.astype("category") if x.dtype == "O" else x)
+        cramers_v = am.CramersV(dff)
+        cfit = cramers_v.fit().round(2)
+        fig1 = px.imshow(cfit, width=600, height=600, text_auto=True)
+        st.plotly_chart(fig1)
+
+    if Report == "Univariate":
         selected_col = st.sidebar.selectbox("Select Type",df.columns)
         if selected_col in categorical:
             fig = make_subplots(rows=1, cols=2, specs=[[{"type": "bar"}, {"type": "pie"}]],
                                 subplot_titles=["Bar Chart", "Pie Chart"], column_widths=[0.6, 0.4])
-            fig.add_trace(go.Bar(x=df[selected_col].value_counts().index, y=df[selected_col].value_counts()), row=1, col=1)
+            fig.add_trace(go.Bar(x=df[selected_col].value_counts().index, y=df[selected_col].value_counts()), row=1, col=1,)
             fig.add_trace(go.Pie(labels=df[selected_col].value_counts().index, values=df[selected_col].value_counts()), row=1, col=2)
             fig.update_layout(
-                {'title': {'text': f"plots for {selected_col}", 'x': 0.5, 'y': 0.9, 'font_size': 30, 'font_color': '#FFD700'}},
+                {'title': {'text': f"Plots for {selected_col}", 'x': 0.5, 'y': 0.9, 'font_size': 30, 'font_color': '#FFD700'}},
             height = 600, width = 900, showlegend = False)
             fig.update_xaxes(tickangle=-45)
             st.plotly_chart(fig)
 
 
-            #for i in categorical:
-            #    fig = make_subplots(rows=1, cols=2, specs=[[{"type": "bar"}, {"type": "pie"}]],
-            #                        subplot_titles=["Bar Chart", "Pie Chart"], column_widths=[0.6, 0.4])
-            #    fig.add_trace(go.Bar(x=df[i].value_counts().index, y=df[i].value_counts()), row=1, col=1)
-            #    fig.add_trace(go.Pie(labels=df[i].value_counts().index, values=df[i].value_counts()), row=1, col=2)
-            #    fig.update_layout(
-            #        {'title': {'text': f"plots for {i}", 'x': 0.5, 'y': 0.9, 'font_size': 25, 'font_color': 'Blue'}},
-            #    height = 600, width = 900, showlegend = False)
-            #    fig.update_xaxes(tickangle=-45)
-            #    st.plotly_chart(fig)
         else:
             p1 = go.Box(y=df[selected_col], marker=dict(color='Orange'), name=f'{selected_col}')
             p2 = go.Histogram(x=df[selected_col], marker=dict(color='yellowgreen'))
@@ -135,27 +140,15 @@ if EDA:
             fig.append_trace(p1, row=1, col=1)
             fig.append_trace(p2, row=1, col=2)
             fig.update_layout(
-                {'title': {'text': f"plots for {selected_col}", 'x': 0.5, 'y': 0.9, 'font_size': 30, 'font_color': '#FFD700'}}
+                {'title': {'text': f"Plots for {selected_col}", 'x': 0.5, 'y': 0.9, 'font_size': 30, 'font_color': '#FFD700'}}
                 , height=500, width=900, showlegend=False)
             # fig.show()
             st.plotly_chart(fig)
 
-            #for i in numeric:
-            #    p1 = go.Box(y=df[i], marker=dict(color='Orange'), name=f'{i}')
-            #    p2 = go.Histogram(x=df[i], marker=dict(color='yellowgreen'))
-#
-            #    fig = make_subplots(rows=1, cols=2, specs=[[{"type": "box"}, {"type": "Histogram"}]],
-            #                        subplot_titles=["Box Plot", "Histogram"])
-#
-            #    fig.append_trace(p1, row=1, col=1)
-            #    fig.append_trace(p2, row=1, col=2)
-            #    fig.update_layout(
-            #        {'title': {'text': f"plots for {i}", 'x': 0.5, 'y': 0.9, 'font_size': 25, 'font_color': 'Blue'}}
-            #        , height=600, width=900, showlegend=False)
-            #    #fig.show()
-            #    st.plotly_chart(fig)
 
-    if Report == "Baiveriate":
+
+
+    if Report == "Bivariate":
         selected_col = st.sidebar.selectbox("Select Column", df.columns)
         cl1, cl2 = st.columns([1,1])
         colo = ['#012D9C', '#7097FF']
@@ -273,9 +266,9 @@ if EDA:
                 df2 = df2[df2['intl_plan'] == f8]
             table = pd.pivot_table(df2, values=selected_col, index=['State_codes'],
                                    columns=['churn'], aggfunc=np.sum)
-            table['%'] = (table['yes']/(table['yes']+table['no']))*100
+            table['per'] = (table['yes']/(table['yes']+table['no']))*100
             table = table.reset_index()
-            fig4 = px.choropleth(table, locations='State_codes', color='%', locationmode= "USA-states",
+            fig4 = px.choropleth(table, locations='State_codes', color='per', locationmode= "USA-states",
                            color_continuous_scale="PuBu", width=900, height=500)
             fig4.update_geos(fitbounds="locations", visible=False)
             fig4.update_layout(geo=dict(bgcolor= 'rgba(0,0,0,0)'),margin={"r":0,"t":100,"l":0,"b":0},paper_bgcolor='#0E1117',plot_bgcolor='#0E1117')
@@ -303,4 +296,3 @@ if EDA:
 
 
 st.sidebar.markdown("<h2 style='text-align: center;'>----------------------------</h2>", unsafe_allow_html=True)
-
