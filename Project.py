@@ -138,9 +138,7 @@ if EDA:
 
             fig.append_trace(p1, row=1, col=1)
             fig.append_trace(p2, row=1, col=2)
-            fig.update_layout(
-                {'title': {'text': f"Plots for {selected_col}", 'x': 0.5, 'y': 0.9, 'font_size': 30, 'font_color': '#FFD700'}}
-                , height=500, width=900, showlegend=False)
+            fig.update_layout(height=500, width=900, showlegend=False)
             # fig.show()
             st.plotly_chart(fig)
 
