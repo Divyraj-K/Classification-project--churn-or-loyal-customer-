@@ -265,10 +265,10 @@ if EDA:
                 df2 = df2[df2['intl_plan'] == f8]
             table = pd.pivot_table(df2, values=selected_col, index=['State_codes'],
                                    columns=['churn'], aggfunc=np.sum)
-            table['per'] = (table['yes']/(table['yes']+table['no']))*100
+            table['%'] = (table['yes']/(table['yes']+table['no']))*100
             table = table.reset_index()
             st.dataframe(table)
-            fig4 = px.choropleth(table, locations='State_codes', color='per', locationmode= "USA-states",
+            fig4 = px.choropleth(table, locations='State_codes', color='%', locationmode= "USA-states",
                            color_continuous_scale="PuBu", width=900, height=500)
             fig4.update_geos(fitbounds="locations", visible=False)
             fig4.update_layout(geo=dict(bgcolor= 'rgba(0,0,0,0)'),margin={"r":0,"t":100,"l":0,"b":0},paper_bgcolor='#0E1117',plot_bgcolor='#0E1117')
