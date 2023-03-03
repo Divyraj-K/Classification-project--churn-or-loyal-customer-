@@ -9,3 +9,4 @@ plotly==5.7.0
 us
 SciPy
 association_metrics
+streamlit_option_menu
