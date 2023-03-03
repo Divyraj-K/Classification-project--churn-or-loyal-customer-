@@ -10,3 +10,4 @@ us
 SciPy
 association_metrics
 streamlit_option_menu
+lightgbm==3.3.0
