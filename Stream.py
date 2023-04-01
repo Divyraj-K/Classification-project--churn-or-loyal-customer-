@@ -351,3 +351,159 @@ if selected == 'EDA':
 
 
 #######################################################################################################################################
+
+
+
+
+import warnings
+warnings.filterwarnings('ignore')
+import plotly.express as px
+import plotly.figure_factory as ff
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from sklearn import preprocessing , linear_model
+from sklearn.linear_model import LinearRegression
+from sklearn import preprocessing , linear_model
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import OneHotEncoder
+ohe=OneHotEncoder(handle_unknown="ignore", sparse=False)
+import base64
+
+##############################################
+
+#             Model
+
+### catboost
+from lightgbm import LGBMClassifier
+#from catboost import CatBoostClassifier
+data1=['High', 'Low-Medium', 'Low', 'Medium-High', 'intl_plan_no',
+       'intl_plan_yes', 'voice_plan_yes', 'voice_plan_no', 'area_code_415',
+       'area_code_408', 'area_code_510', 'account_length', 'voice_messages',
+       'intl_mins', 'intl_calls', 'intl_charge', 'day_mins', 'day_calls',
+       'day_charge', 'eve_mins', 'eve_calls', 'eve_charge', 'night_mins',
+       'night_calls', 'night_charge', 'customer_calls']
+sc=pd.read_csv("state-category.csv")
+unique_states=pd.read_csv("unique_states.csv")
+import pickle
+model = pickle.load(open('ch.pkl','rb'))
+##############################   User Input    
+    
+if selected == 'Prediction': 
+    #st.sidebar.markdown("<h1 style='text-align: left;'>Insert</h1>", unsafe_allow_html=True)
+    option = st.sidebar.radio('Insert',('Values','Dataset'))
+    if option == 'Values':
+        def user_input_features():
+            st.write("**Please provide the following inputs:**")
+            col1, col2 = st.columns(2)
+
+            with col1:
+                state_options = unique_states['State_code_name'].tolist()
+                state = st.selectbox('State', options=state_options)
+                area_code = st.selectbox('Area Code',('area_code_408','area_code_415','area_code_510'))
+                account_length = st.number_input('Account Length', value=0)
+                voice_plan = st.selectbox('Voice Plan ',('Yes','No'))
+                voice_messages = st.number_input('Voice Messages', value=0)
+                intl_plan = st.selectbox('Intl Plan',('Yes','No'))
+                intl_mins = st.number_input('Intl Mins', value=0.0, step=0.1)
+                intl_calls = st.number_input('Intl Calls', value=0)
+                intl_charge = st.number_input('Intl Charge', value=0.0, step=0.1)
+                day_mins = st.number_input('Day Mins', value=0.0, step=0.1)
+
+            with col2:
+                day_calls = st.number_input('Day Calls', value=0)
+                day_charge = st.number_input('Day Charge', value=0.0, step=0.1)
+                eve_mins = st.number_input('Eve Mins', value=0.0, step=0.1)
+                eve_calls = st.number_input('Eve Calls', value=0)
+                eve_charge = st.number_input('Eve Charge', value=0.0, step=0.1)
+                night_mins = st.number_input('Night Mins', value=0.0, step=0.1)
+                night_calls = st.number_input('Night Calls', value=0)
+                night_charge = st.number_input('Night Charge', value=0.0, step=0.1)
+                customer_calls = st.number_input('Customer Calls', value=0)
+      
+            data = {'state':state,
+                   'area_code':area_code,
+                   'account_length':account_length,
+                   'voice_plan':voice_plan,
+                   'voice_messages':voice_messages,
+                   'intl_plan':intl_plan,
+                   'intl_mins':intl_mins,
+                   'intl_calls':intl_calls,
+                   'intl_charge':intl_charge,
+                   'day_mins':day_mins,
+                   'day_calls':day_calls,
+                   'day_charge':day_charge,
+                   'eve_mins':eve_mins,
+                   'eve_calls':eve_calls,
+                   'eve_charge':eve_charge,
+                   'night_mins':night_mins,
+                   'night_calls':night_calls,
+                   'night_charge':night_charge,
+                   'customer_calls':customer_calls
+                   }
+            features = pd.DataFrame(data,index = [0])
+            return features       
+        
+     
+        av = user_input_features()
+        av['state'] = av['state'].apply(lambda x: x[:2])         
+        av['state'] = av['state'].replace(sc.set_index('State')['Value']) 
+        av['voice_plan'] = av['voice_plan'].map({'Yes': "voice_plan_yes" ,'No': "voice_plan_no"})
+        av['intl_plan'] = av['intl_plan'].map({'Yes': "intl_plan_yes" ,'No': "intl_plan_no"})
+        columns1=['state', 'area_code', 'voice_plan', 'intl_plan']
+        for i in columns1:
+            x=pd.DataFrame(ohe.fit_transform(av[[i]]), columns=av[i].unique())
+            av = pd.concat([x,av], axis=1, join="inner").drop(i,axis=1)
+        missing_cols = set(data1) - set(av.columns)
+        for col in missing_cols:
+            av[col] = 0
+        if st.button("Predict"):
+            prediction = model.predict(av)
+            prediction_proba = model.predict_proba(av)           
+            st.subheader('Will Customer Churn ???')
+#             st.write('Yes' if prediction[0] == 1 else 'No')
+            if prediction[0] == 0:
+                st.success('Customer will not Churn')
+            elif prediction[0] == 1:
+                st.error( 'Customer will Churn')            
+            st.subheader('Prediction Probability')
+            d77 = pd.DataFrame(prediction_proba, columns=['No', 'Yes'])
+            d77 = d77.applymap(lambda x: '{:.2%}'.format(x))
+            # Format DataFrame for Streamlit app
+            for col, values in d77.iteritems():
+                st.write(f'{col}  -  {values[0]}')
+            
+            
+    
+    elif option == 'Dataset':
+        dataset=st.sidebar.file_uploader("Upload File Here", type = ['csv'])
+        if dataset is not None:
+            av= pd.read_csv(dataset)
+            d=av.copy()
+            av['state'] = av['state'].replace(sc.set_index('State')['Value']) 
+            av['voice_plan'] = av['voice_plan'].map({'yes': "voice_plan_yes" ,'no': "voice_plan_no"})
+            av['intl_plan'] = av['intl_plan'].map({'yes': "intl_plan_yes" ,'no': "intl_plan_no"})   
+            columns1=['state', 'area_code', 'voice_plan', 'intl_plan']
+            for i in columns1:
+                x=pd.DataFrame(ohe.fit_transform(av[[i]]), columns=av[i].unique())
+                av = pd.concat([x,av], axis=1, join="inner").drop(i,axis=1)
+            if st.button("Predict"):
+                predictions = model.predict(av)
+                prediction_proba = model.predict_proba(av)
+                a = pd.DataFrame(predictions, columns=['Prediction'])
+                a['Prediction'] = a['Prediction'].map({1: "yes" ,0: "no"})
+                b = pd.DataFrame(prediction_proba, columns=['No-Probability', 'Yes-probability'])
+                b = b.applymap(lambda x: '{:.2%}'.format(x))
+                c = pd.concat([a, b], axis=1)
+                e=pd.concat([d,c], axis=1)
+                st.dataframe(e)
+                # Add a button to download the data
+                def download_button(df):
+                    csv = df.to_csv(index=False)
+                    b64 = base64.b64encode(csv.encode()).decode()
+                    href = f'<a href="data:file/csv;base64,{b64}" download="my_dataset.csv">Download CSV file</a>'
+                    st.markdown(href, unsafe_allow_html=True)
+                download_button(e)
+                
+
+
+    
