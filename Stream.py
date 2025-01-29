@@ -62,64 +62,64 @@ def nullvalueimputer(data,x,y):
 #@st.cache(allow_output_mutation=True)
 def get_data():
     df = pd.read_csv("Churn.csv")
-    df = df.drop(['Unnamed: 0'],axis=1)
+    df = df.drop(['Unnamed: 0'], axis=1)
     df.columns = df.columns.str.replace('.', '_')
-    #df['Churn'] = np.where(df['Churn']=='FALSE',0,1)
+    # df['Churn'] = np.where(df['Churn']=='FALSE',0,1)
     return df
+
+
 data = get_data()
 
-#null value imputation for day_charge
-new = nullvalueimputer(data=data,x="day_mins",y="day_charge")
-#null value imputation for eve_mins
-df = nullvalueimputer(new,"eve_charge","eve_mins")
+# null value imputation for day_charge
+new = nullvalueimputer(data=data, x="day_mins", y="day_charge")
+# null value imputation for eve_mins
+df = nullvalueimputer(new, "eve_charge", "eve_mins")
 
-
-states = us.states.mapping("abbr","name")
+states = us.states.mapping("abbr", "name")
 State = df['state'].map(lambda x: states.get(x, x))
 
 df.insert(loc=0, column='State_names', value=State)
-df.rename(columns = {'state':'State_codes'}, inplace = True)
+df.rename(columns={'state': 'State_codes'}, inplace=True)
 
+# changing the data types of both the columns
+df['day_charge'] = pd.to_numeric(df['day_charge'], errors='coerce')
+df['eve_mins'] = pd.to_numeric(df['eve_mins'], errors='coerce')
 
-#changing the data types of both the columns
-df['day_charge']=pd.to_numeric(df['day_charge'],errors='coerce')
-df['eve_mins']=pd.to_numeric(df['eve_mins'],errors='coerce')
-
-###########################################################################################################################################
+############################################################################################################################################
 
 
 if selected == 'EDA':
     ## DataSet
-#     st.sidebar.markdown("<h3 style='text-align: center;'>Dataset</h3>", unsafe_allow_html=True)
+    #     st.sidebar.markdown("<h3 style='text-align: center;'>Dataset</h3>", unsafe_allow_html=True)
     Data_view = st.sidebar.checkbox('Dataset')
     if Data_view:
         st.markdown("<h3 style='text-align: center;'>Dataset</h3>", unsafe_allow_html=True)
         st.dataframe(df.head(5))
         st.write(df.shape)
 
-
-    categorical = ['State_names', 'area_code', 'voice_plan', 'intl_plan']#
+    categorical = ['State_names', 'area_code', 'voice_plan', 'intl_plan']  #
     numeric = ['account_length', 'voice_messages', 'intl_mins', 'intl_calls', 'intl_charge',
                'day_charge', 'eve_mins', 'day_mins', 'day_calls', 'eve_calls', 'eve_charge',
                'night_mins', 'night_calls', 'night_charge', 'customer_calls']
 
-
     ##EDA
-#     st.sidebar.markdown("<h2 style='text-align: center;'>----------------------------</h2>", unsafe_allow_html=True)
-#     st.sidebar.markdown("<h3 style='text-align: center;'>EDA</h3>", unsafe_allow_html=True)
+    #     st.sidebar.markdown("<h2 style='text-align: center;'>----------------------------</h2>", unsafe_allow_html=True)
+    #     st.sidebar.markdown("<h3 style='text-align: center;'>EDA</h3>", unsafe_allow_html=True)
 
     EDA = st.sidebar.checkbox('EDA')
     if EDA:
-        Report = st.sidebar.selectbox("Select Report",("Descriptive Statistics","Univariate","Bivariate","Multivariate"))
+        Report = st.sidebar.selectbox("Select Report",
+                                      ("Descriptive Statistics", "Univariate", "Bivariate", "Multivariate"))
         if Report == "Descriptive Statistics":
             st.markdown("<h3 style='text-align: center;'>Descriptive Statistics</h3>", unsafe_allow_html=True)
             st.table(df.describe())
 
-
             st.markdown("<h3 style='text-align: center;'>Correlation</h3>", unsafe_allow_html=True)
-            matrix = df.corr()
-            matrix = round(matrix,2)
-            fig = px.imshow(matrix, width=800, height=800, text_auto=True,color_continuous_scale='Blues_r')
+            numerical_data = df.select_dtypes(include=['number'])
+            df1 = numerical_data.corr()
+            matrix = df1.corr()
+            matrix = round(matrix, 2)
+            fig = px.imshow(matrix, width=800, height=800, text_auto=True, color_continuous_scale='Blues_r')
             st.plotly_chart(fig)
 
             st.markdown("<h3 style='text-align: center;'>Categorical Associations</h3>", unsafe_allow_html=True)
@@ -128,18 +128,21 @@ if selected == 'EDA':
                 lambda x: x.astype("category") if x.dtype == "O" else x)
             cramers_v = am.CramersV(dff)
             cfit = cramers_v.fit().round(2)
-            fig1 = px.imshow(cfit, width=600, height=600, text_auto=True,color_continuous_scale='Blues_r')
+            fig1 = px.imshow(cfit, width=600, height=600, text_auto=True, color_continuous_scale='Blues_r')
             st.plotly_chart(fig1)
 
         if Report == "Univariate":
-            selected_col = st.sidebar.selectbox("Select Type",df.columns)
+            selected_col = st.sidebar.selectbox("Select Type", df.columns)
             st.markdown(f"<h2 style='text-align: center;'>Plot for {selected_col}</h2>", unsafe_allow_html=True)
             if selected_col in categorical:
                 fig = make_subplots(rows=1, cols=2, specs=[[{"type": "bar"}, {"type": "pie"}]],
                                     subplot_titles=["Bar Chart", "Pie Chart"], column_widths=[0.6, 0.4])
-                fig.add_trace(go.Bar(x=df[selected_col].value_counts().index, y=df[selected_col].value_counts()), row=1, col=1,)
-                fig.add_trace(go.Pie(labels=df[selected_col].value_counts().index, values=df[selected_col].value_counts()), row=1, col=2)
-                fig.update_layout(height = 600, width = 900, showlegend = False)
+                fig.add_trace(go.Bar(x=df[selected_col].value_counts().index, y=df[selected_col].value_counts()), row=1,
+                              col=1, )
+                fig.add_trace(
+                    go.Pie(labels=df[selected_col].value_counts().index, values=df[selected_col].value_counts()), row=1,
+                    col=2)
+                fig.update_layout(height=600, width=900, showlegend=False)
                 fig.update_xaxes(tickangle=-45)
                 st.plotly_chart(fig)
 
@@ -157,24 +160,27 @@ if selected == 'EDA':
                 st.plotly_chart(fig)
 
         if Report == "Bivariate":
-            
+
             selected_col = st.sidebar.selectbox("Select Column", df.columns)
-            cl1, cl2 = st.columns([1,1])
+            cl1, cl2 = st.columns([1, 1])
             colo = ['#012D9C', '#7097FF']
             if selected_col in numeric:
                 fig = make_subplots(rows=1, cols=2, specs=[[{"type": "Box"}, {"type": "Box"}]],
-                                subplot_titles=["Box Plot", "Histogram"], column_widths=[0.6, 0.4])
+                                    subplot_titles=["Box Plot", "Histogram"], column_widths=[0.6, 0.4])
 
                 churn = ['yes', 'no']
                 color = ['#079FEB', '#550A35']
 
                 for d, i in enumerate(churn):
                     fig.add_trace(
-                        go.Violin(x=df['churn'][df['churn'] == i], y=df[selected_col][df['churn'] == i], name=i, legendgroup=i,
-                                  showlegend=False, box_visible=True, meanline_visible=True, line_color=color[d]), row=1, col=1)
+                        go.Violin(x=df['churn'][df['churn'] == i], y=df[selected_col][df['churn'] == i], name=i,
+                                  legendgroup=i,
+                                  showlegend=False, box_visible=True, meanline_visible=True, line_color=color[d]),
+                        row=1, col=1)
                 for d, i in enumerate(churn):
-                    fig.add_trace(go.Histogram(x=df[selected_col][df['churn'] == i], marker=dict(color=color[d]), name=i), row=1,
-                                  col=2)
+                    fig.add_trace(
+                        go.Histogram(x=df[selected_col][df['churn'] == i], marker=dict(color=color[d]), name=i), row=1,
+                        col=2)
 
                 fig.update_layout(barmode='stack', height=600, width=900)
                 st.markdown(f"<h2 style='text-align: center;'>{selected_col}</h2>", unsafe_allow_html=True)
@@ -182,36 +188,41 @@ if selected == 'EDA':
 
             #                                 ####   Funnel Chart   ####
             else:
-                
+
                 pivot_table = df.groupby([selected_col, 'churn']).size().reset_index(name='count')
                 pivot_table = pivot_table.pivot(index=selected_col, columns='churn', values='count').fillna(0)
                 pivot_table = pivot_table.reset_index().rename_axis(None, axis=1)
                 pivot_table.columns = [selected_col, 'No', 'Yes']
 
                 df8 = pivot_table.melt(id_vars=selected_col, value_vars=['No', 'Yes'], value_name='count')
-                
-                ak= ['#AA0DFE', '#3283FE', '#85660D', '#782AB6', '#565656', '#1C8356', '#16FF32', '#F7E1A0', '#E2E2E2', '#1CBE4F',
-                     '#C4451C', '#DEA0FD', '#FE00FA', '#325A9B', '#FEAF16', '#F8A19F', '#90AD1C', '#F6222E', '#1CFFCE', '#2ED9FF',
-                     '#B10DA1', '#C075A6', '#FC1CBF', '#B00068', '#FBE426', '#FA0087', '#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D',
-                     '#DA16FF', '#222A2A', '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1', '#FC0080', '#B2828D',
-                     '#6C7C32', '#778AAE', '#862A16', '#A777F1', '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038','#DB6574']
-            
+
+                ak = ['#AA0DFE', '#3283FE', '#85660D', '#782AB6', '#565656', '#1C8356', '#16FF32', '#F7E1A0', '#E2E2E2',
+                      '#1CBE4F',
+                      '#C4451C', '#DEA0FD', '#FE00FA', '#325A9B', '#FEAF16', '#F8A19F', '#90AD1C', '#F6222E', '#1CFFCE',
+                      '#2ED9FF',
+                      '#B10DA1', '#C075A6', '#FC1CBF', '#B00068', '#FBE426', '#FA0087', '#2E91E5', '#E15F99', '#1CA71C',
+                      '#FB0D0D',
+                      '#DA16FF', '#222A2A', '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1', '#FC0080',
+                      '#B2828D',
+                      '#6C7C32', '#778AAE', '#862A16', '#A777F1', '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63',
+                      '#AF0038', '#DB6574']
+
                 fig1 = px.funnel(df8, x='variable', y='count'
                                  , color=selected_col
-                                        ##  ,color_discrete_sequence=['#DB6574', '#03DAC5','#DB6574', '#03DAC5']
-                                 ,color_discrete_sequence=ak
-                                
-                                 #,color_discrete_sequence = ['red', 'blue', 'orange', 'green']
-                                          ,title=selected_col)
+                                 ##  ,color_discrete_sequence=['#DB6574', '#03DAC5','#DB6574', '#03DAC5']
+                                 , color_discrete_sequence=ak
+
+                                 # ,color_discrete_sequence = ['red', 'blue', 'orange', 'green']
+                                 , title=selected_col)
                 fig1.update_traces(textposition='auto', textfont=dict(color='#fff'))
                 fig1.update_layout(autosize=True,
-                                          margin=dict(t=110, b=50, l=70, r=40),
-                                          xaxis_title=' ', yaxis_title=" ",
-                                          plot_bgcolor='#0E1117', paper_bgcolor='#0E1117',
-                                          title_font=dict(size=25, color='#a5a7ab', family="Muli, sans-serif"),
-                                          font=dict(color='#8a8d93',size=22)
-                                         # ,legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
-                                         , height = 600, width = 900)
+                                   margin=dict(t=110, b=50, l=70, r=40),
+                                   xaxis_title=' ', yaxis_title=" ",
+                                   plot_bgcolor='#0E1117', paper_bgcolor='#0E1117',
+                                   title_font=dict(size=25, color='#a5a7ab', family="Muli, sans-serif"),
+                                   font=dict(color='#8a8d93', size=22)
+                                   # ,legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                                   , height=600, width=900)
                 st.markdown(f"<h2 style='text-align: center;'>{selected_col} vs Target </h2>", unsafe_allow_html=True)
                 st.write("")
                 st.markdown("<h3 style='text-align: center;'>Funnel Chart</h3>", unsafe_allow_html=True)
@@ -219,11 +230,10 @@ if selected == 'EDA':
                 st.write("")
                 st.write("")
 
-                   #                                 ####   Tree Map   ####
-               
-                 
+                #                                 ####   Tree Map   ####
+
                 st.write("")
-                st.write("")        
+                st.write("")
                 st.markdown("<h3 style='text-align: center;'>Tree Map</h3>", unsafe_allow_html=True)
                 pivot_table = df.groupby([selected_col, 'churn']).size().reset_index(name='count')
                 pivot_table = pivot_table.pivot(index=selected_col, columns='churn', values='count').fillna(0)
@@ -232,20 +242,16 @@ if selected == 'EDA':
 
                 df7 = pd.melt(pivot_table, id_vars=selected_col, value_vars=['No', 'Yes'])
                 fig2 = px.treemap(df7, path=[selected_col, 'variable'], values='value')
-                fig2.update_layout(height = 600, width = 900)
+                fig2.update_layout(height=600, width=900)
                 st.plotly_chart(fig2)
 
-
-
-
-
         if Report == "Multivariate":
-            tab1, tab2, tab3 =st.tabs(['Scatter Chart','Map Chart','Sunbrust Chart'])
+            tab1, tab2, tab3 = st.tabs(['Scatter Chart', 'Map Chart', 'Sunbrust Chart'])
             with tab1:
                 cc1, cc2 = st.columns([1, 1])
                 x_axis = cc1.selectbox("Select X_axis", numeric)
                 Y_axis = cc2.selectbox("Select Y_axis", numeric)
-                co1, co2, co3 = st.columns([1,1,1])
+                co1, co2, co3 = st.columns([1, 1, 1])
                 uni2 = df['area_code'].unique()
                 uni3 = df['voice_plan'].unique()
                 uni4 = df['intl_plan'].unique()
@@ -271,13 +277,15 @@ if selected == 'EDA':
                     df1 = df1[df1['intl_plan'] == f4]
 
                 fig = px.scatter(df1, x=x_axis, y=Y_axis,
-                                 color="churn",width=900,height=500)#hover_name="country", log_x=True,
+                                 color="churn", width=900, height=500)  # hover_name="country", log_x=True,
                 st.plotly_chart(fig)
 
             with tab2:
                 cl1, cl2, cl3, cl4 = st.columns([1, 1, 1, 1])
-                selected_col = cl1.selectbox("Select Variable",numeric)
-                st.markdown(f"<h2 style='text-align: center;'>Churned customers for each states based on {selected_col}</h2>", unsafe_allow_html=True)
+                selected_col = cl1.selectbox("Select Variable", numeric)
+                st.markdown(
+                    f"<h2 style='text-align: center;'>Churned customers for each states based on {selected_col}</h2>",
+                    unsafe_allow_html=True)
                 f6 = cl2.selectbox("Area_code_", uni2)
                 f7 = cl3.selectbox("Voice_plan_", uni3)
                 f8 = cl4.selectbox("intl_plan_", uni4)
@@ -296,21 +304,21 @@ if selected == 'EDA':
                     df2 = df2[df2['intl_plan'] == f8]
                 table = pd.pivot_table(df2, values=selected_col, index=['State_codes'],
                                        columns=['churn'], aggfunc=np.sum)
-                table['%'] = (table['yes']/(table['yes']+table['no']))*100
+                table['%'] = (table['yes'] / (table['yes'] + table['no'])) * 100
                 table = table.reset_index()
-                fig4 = px.choropleth(table, locations='State_codes', color='%', locationmode= "USA-states",
-                               color_continuous_scale="PuBu", width=900, height=500)
+                fig4 = px.choropleth(table, locations='State_codes', color='%', locationmode="USA-states",
+                                     color_continuous_scale="PuBu", width=900, height=500)
                 fig4.update_geos(fitbounds="locations", visible=False)
-                fig4.update_layout(geo=dict(bgcolor= 'rgba(0,0,0,0)'),margin={"r":0,"t":100,"l":0,"b":0},paper_bgcolor='#0E1117',plot_bgcolor='#0E1117')
+                fig4.update_layout(geo=dict(bgcolor='rgba(0,0,0,0)'), margin={"r": 0, "t": 100, "l": 0, "b": 0},
+                                   paper_bgcolor='#0E1117', plot_bgcolor='#0E1117')
 
                 st.plotly_chart(fig4)
 
             with tab3:
                 df00 = df
-                df00['churn'] = np.where(df00['churn']=='yes','churn','non_churn')
+                df00['churn'] = np.where(df00['churn'] == 'yes', 'churn', 'non_churn')
                 df00['voice_plan'] = np.where(df00['voice_plan'] == 'yes', 'voice_plan_yes', 'voice_plan_no')
                 df00['intl_plan'] = np.where(df00['intl_plan'] == 'yes', 'intl_plan_yes', 'intl_plan_no')
-
 
                 # Create a form to allow the user to select the columns to group by
                 categorical = ['area_code', 'voice_plan', 'intl_plan']
@@ -322,14 +330,14 @@ if selected == 'EDA':
 
                     # Create the sunburst chart
                     fig = px.sunburst(grouped, path=group_by_cols + ['churn'], values='count',
-                      color_discrete_sequence=px.colors.sequential.Teal)
+                                      color_discrete_sequence=px.colors.sequential.Teal)
 
                     # Customize the chart layout
                     fig.update_layout(autosize=True,
                                       margin=dict(t=110, b=50, l=70, r=40),
                                       xaxis_title=' ', yaxis_title=" ",
                                       plot_bgcolor='#0E1117', paper_bgcolor='#0E1117',
-                                      #title_font=dict(size=25, color='#a5a7ab', family="Muli, sans-serif"),
+                                      # title_font=dict(size=25, color='#a5a7ab', family="Muli, sans-serif"),
                                       font=dict(color='#8a8d93'),
                                       legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
                                       )
@@ -338,9 +346,6 @@ if selected == 'EDA':
                     st.plotly_chart(fig)
                 else:
                     st.warning('Please select at least one column to group by.')
-
-
-    
 
 
 
